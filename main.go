@@ -42,8 +42,9 @@ func NoCache(h http.Handler) http.Handler {
 }
 
 func main() {
+	flag.Parse()
 	fmt.Println("Path: ", getPath(*path))
-	fmt.Println("Access: ", "http://127.0.0.1"+*lsn)
+	fmt.Println("Access: ", *lsn)
 
 	http.Handle("/", NoCache(http.FileServer(http.Dir(getPath(*path)))))
 	http.ListenAndServe(*lsn, nil)
