@@ -4,8 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
-	"os/exec"
-	"path/filepath"
 )
 
 var (
@@ -13,14 +11,9 @@ var (
 	path = flag.String("x", "./", "path")
 )
 
-func getPath(path string) string {
-	f, _ := exec.LookPath(path)
-	p, _ := filepath.Abs(f)
-	return p
-}
-
 func NoCache(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Access:", r.URL.String())
 		etagHeaders := []string{
 			"ETag",
 			"If-Modified-Since",
@@ -43,9 +36,11 @@ func NoCache(h http.Handler) http.Handler {
 
 func main() {
 	flag.Parse()
-	fmt.Println("Path: ", getPath(*path))
+	fmt.Println("Path: ", *path)
 	fmt.Println("Access: ", *lsn)
 
-	http.Handle("/", NoCache(http.FileServer(http.Dir(getPath(*path)))))
-	http.ListenAndServe(*lsn, nil)
+	http.Handle("/", NoCache(http.FileServer(http.Dir(*path))))
+	if err := http.ListenAndServe(*lsn, nil); err != nil {
+		fmt.Println("Error:", err.Error())
+	}
 }
